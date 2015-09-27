@@ -35,13 +35,15 @@ entity SPI_Core is
           Data_Received     :   out SPI_Data_Type;
           Data_Pulse        : in    SPI_Bit_Type;
           SPI_Clock_Divider : in    SPI_Clock_Divider_Type;
+          Count_Port        :   out SPI_Bit_Count_Type;
+          State_Port        :   out SPI_State_Type;
           SPI_Status        :   out SPI_Status_Array_Type);
 
 end SPI_Core;
 
 architecture architecture_SPI_Core of SPI_Core is
 
-    type SPI_State_Type is (Wait_State, Enable_State, Setup_State, Data_State, Stop_State);
+    --type SPI_State_Type is (Wait_State, Enable_State, Setup_State, Data_State, Stop_State);
 
 begin
 
@@ -55,6 +57,9 @@ begin
         variable SPI_State_Reg   : SPI_State_Type;
 
     begin
+
+        Count_Port    <= Count;
+        State_Port    <= SPI_State_Reg;
 
         SPI_Status    <= SPI_Status_Reg;
         Data_Received <= Data_In_Reg;
@@ -127,7 +132,6 @@ begin
 
                         if Count = 0 then
                             SPI_State_Reg := Stop_State;
-                            Data_In_Reg   := Data_Reg;
                         else
                             Count := Count - 1;
                             SPI_State_Reg := Setup_State;
@@ -136,6 +140,7 @@ begin
 
                 when Stop_State =>
 
+                    Data_In_Reg                := Data_Reg;
                     SPI_Status_Reg(Data_Ready) := SPI_Status_Polarity;
                     
                     if SPI_Clock_Timer > 0 then
